@@ -5,21 +5,23 @@ import io
 import asyncio
 import logging
 import sys
+import configparser
 from buttplug import Client, WebsocketConnector, ProtocolSpec
 
+# Function to strip comments from a config value
+def strip_comments(value):
+    return value.split(';', 1)[0].strip()
 
+config = configparser.ConfigParser(interpolation=None)
+config.read('config.ini')
 
+# Access and process configuration settings
+region_str = strip_comments(config['Settings']['region'])
+region = tuple(map(int, region_str.split(',')))
 
-#temporary config
-
-region = (2330, 1405, 84, 30)   #screenshot parameters(left, top, width, height) https://github.com/jabbalaci/ShowMousePosition 
-top_value = "1.0M"              #at this dps toy will vibrate at 100%
-bottom_value = "200K"           #at this dps toy will vibrate at 0%
-scale = 0.5                     #global scale of the vibrations
-
-
-
-
+top_value = strip_comments(config['Settings']['top_value'])
+bottom_value = strip_comments(config['Settings']['bottom_value'])
+scale = float(strip_comments(config['Settings']['scale']))
 
 tesseract_cmd = "Tesseract-OCR\\tesseract.exe"
 pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
@@ -88,6 +90,9 @@ async def main():
 
             if len(device.actuators) != 0:
                 await device.actuators[0].command(float(percentage * scale / 100.0 ))
+            if len(device.actuators) != 1:
+                await device.actuators[1].command(float(percentage * scale / 100.0 ))
+                
 
         await asyncio.sleep(0.4)
 
