@@ -7,7 +7,7 @@ uses screenshots since its hard to access WoW externally
 
 * [Python](https://www.python.org/downloads/release/python-3123/)
 * [Intiface Central](https://github.com/intiface/intiface-central/releases)
-* [Supported Buttplug Device](https://iostindex.com/?filter0Availability=Available,DIY&filter1Connection=Digital&filter2ButtplugSupport=4) or Game Controller
+* [Supported Buttplug Device](https://iostindex.com/?filter0Availability=Available,DIY&filter1Connection=Digital&filter2ButtplugSupport=4)
 * [WeakAuras](https://www.curseforge.com/wow/addons/weakauras-2)
 * [Details Damage Meter](https://www.curseforge.com/wow/addons/details)
 
