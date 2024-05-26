@@ -1,7 +1,6 @@
 # World-of-Buttcraft
 
-buttplug.io integration for World of Warcraft, Vibrates based on DPS Done
-uses screenshots since its hard to access WoW externally
+buttplug.io integration for World of Warcraft, Vibrates based on DPS Done, uses screenshots since its hard to access WoW externally
 
 ### Dependencies
 
