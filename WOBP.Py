@@ -86,8 +86,9 @@ async def main():
                 print(f"Invalid or no combat data found. Percentage: {percentage * scale} \n")
 
             for device_id, device in client.devices.items():
-                if device.actuators:
+                if device.actuators and len(device.actuators) > 0:
                     await device.actuators[0].command(float(scale * percentage / 100.0))
+                if device.rotatory_actuators and len(device.rotatory_actuators) > 0:
                     await device.rotatory_actuators[0].command(rotationscale * percentage / 100.0, True)
         except Exception as e:
             logging.error(f"Error during processing: {e}")
