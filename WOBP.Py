@@ -8,7 +8,7 @@ import sys
 import configparser
 from buttplug import Client, WebsocketConnector, ProtocolSpec
 
-# Function to strip comments from a config value
+#function to strip comments from a config value
 def strip_comments(value):
     return value.split(';', 1)[0].strip()
 
@@ -22,6 +22,7 @@ region = tuple(map(int, region_str.split(',')))
 top_value = strip_comments(config['Settings']['top_value'])
 bottom_value = strip_comments(config['Settings']['bottom_value'])
 scale = float(strip_comments(config['Settings']['scale']))
+rotationscale =float(strip_comments(config['Settings']['rotationscale'])) 
 
 tesseract_cmd = "Tesseract-OCR\\tesseract.exe"
 pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
@@ -44,55 +45,52 @@ def parse_value(value_str):
 async def main():
     client = Client("World of Buttcraft", ProtocolSpec.v3)
     connector = WebsocketConnector("ws://127.0.0.1:12345", logger=client.logger)
+    
     try:
         await client.connect(connector)
     except Exception as e:
         logging.error(f"Could not connect to server, exiting: {e}")
         return
-    #connect buttplugio devices
+    
+    # Connect buttplugio devices
     await client.start_scanning()
     print("Scanning Devices...")
     await asyncio.sleep(10)
     await client.stop_scanning()
     client.logger.info(f"Devices: {client.devices}")
+    print("Current scale:", scale)
 
     percentage = 0
 
     while True:
-        screenshot = pyautogui.screenshot(region=region)
-        screenshot_bytes = io.BytesIO()
-        screenshot.save(screenshot_bytes, format='PNG')
-        screenshot_bytes.seek(0)
-        screenshot_image = Image.open(screenshot_bytes)
-        extracted_text = pytesseract.image_to_string(screenshot_image)
+        try:
+            screenshot = pyautogui.screenshot(region=region)
+            screenshot_bytes = io.BytesIO()
+            screenshot.save(screenshot_bytes, format='PNG')
+            screenshot_bytes.seek(0)
+            screenshot_image = Image.open(screenshot_bytes)
+            extracted_text = pytesseract.image_to_string(screenshot_image).strip()
 
-        if extracted_text.strip() and is_valid_text(extracted_text.strip()):
-            given_value_str = extracted_text
-            given_value = parse_value(given_value_str)
-            percentage = round(((given_value - parse_value(bottom_value)) / (parse_value(top_value) - parse_value(bottom_value))) * 100, 1)
-            percentage = max(min(percentage, 100), 0)  # Cap the percentage between 0 and 100
-            print(f"Current DPS: {extracted_text} - Percentage: {percentage} \n")
-
-        else:
-                percentage = round(percentage, 0) - 5
-                if percentage == -5:
-                    print("Invalid or no combat data found. Percentage:", "0")
-                else:
-                    print(f"Invalid or no combat data found. Percentage: {percentage} \n")
-                
-                percentage = max(min(percentage, 100), 0)
+            if extracted_text and is_valid_text(extracted_text):
+                given_value_str = extracted_text
+                given_value = parse_value(given_value_str)
+                top_value_parsed = parse_value(top_value)
+                bottom_value_parsed = parse_value(bottom_value)
+                percentage = round(((given_value - bottom_value_parsed) / (top_value_parsed - bottom_value_parsed)) * 100, 1)
+                percentage = max(min(percentage, 100), 0)  # Cap the percentage between 0 and 100
+                print(f"Current DPS: {extracted_text} - Percentage: {percentage * scale} \n")
+            else:
+                percentage = max(min(round(percentage, 0) - 5, 100), 0)
                 if percentage <= 4.9:
                     percentage = 0
-                await asyncio.sleep(1)
+                print(f"Invalid or no combat data found. Percentage: {percentage * scale} \n")
 
-        if len(client.devices) != 0:
-            device = client.devices[0]
-
-            if len(device.actuators) != 0:
-                await device.actuators[0].command(float(percentage * scale / 100.0 ))
-            if len(device.actuators) != 1:
-                await device.actuators[1].command(float(percentage * scale / 100.0 ))
-                
+            for device_id, device in client.devices.items():
+                if device.actuators:
+                    await device.actuators[0].command(float(scale * percentage / 100.0))
+                    await device.rotatory_actuators[0].command(rotationscale * percentage / 100.0, True)
+        except Exception as e:
+            logging.error(f"Error during processing: {e}")
 
         await asyncio.sleep(0.4)
 
