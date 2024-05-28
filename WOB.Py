@@ -15,7 +15,7 @@ def strip_comments(value):
 config = configparser.ConfigParser(interpolation=None)
 config.read('config.ini')
 
-# Access and process configuration settings
+#access and process config
 region_str = strip_comments(config['Settings']['region'])
 region = tuple(map(int, region_str.split(',')))
 
@@ -52,7 +52,7 @@ async def main():
         logging.error(f"Could not connect to server, exiting: {e}")
         return
     
-    # Connect buttplugio devices
+    #connect buttplugio devices
     await client.start_scanning()
     print("Scanning Devices...")
     await asyncio.sleep(10)
