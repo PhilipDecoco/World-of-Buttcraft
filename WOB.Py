@@ -71,29 +71,50 @@ async def main():
             screenshot_image = Image.open(screenshot_bytes)
             extracted_text = pytesseract.image_to_string(screenshot_image).strip()
 
-            if extracted_text and is_valid_text(extracted_text):
-                given_value_str = extracted_text
-                given_value = parse_value(given_value_str)
-                top_value_parsed = parse_value(top_value)
-                bottom_value_parsed = parse_value(bottom_value)
-                percentage = round(((given_value - bottom_value_parsed) / (top_value_parsed - bottom_value_parsed)) * 100, 1)
-                percentage = max(min(percentage, 100), 0)  # Cap the percentage between 0 and 100
-                print(f"Current DPS: {extracted_text} - Percentage: {percentage * scale} \n")
+            if extracted_text == "DEAD":
+                print("DEAD")
+                for _ in range(5):
+                    for device_id, device in client.devices.items():
+                        if device.actuators and len(device.actuators) > 0:
+                            await device.actuators[0].command(scale * 1)
+                        if device.rotatory_actuators and len(device.rotatory_actuators) > 0:
+                            await device.rotatory_actuators[0].command(rotationscale * 1)
+                    await asyncio.sleep(0.8)
+
+                    for device_id, device in client.devices.items():
+                        if device.actuators and len(device.actuators) > 0:
+                            await device.actuators[0].command(0)
+                        if device.rotatory_actuators and len(device.rotatory_actuators) > 0:
+                            await device.rotatory_actuators[0].command(0)
+                    await asyncio.sleep(0.2)
+                percentage = 0
+
             else:
-                percentage = max(min(round(percentage, 0) - 5, 100), 0)
-                if percentage <= 4.9:
-                    percentage = 0
-                print(f"Invalid or no combat data found. Percentage: {percentage * scale} \n")
+                if extracted_text and is_valid_text(extracted_text):
+                    given_value_str = extracted_text
+                    given_value = parse_value(given_value_str)
+                    top_value_parsed = parse_value(top_value)
+                    bottom_value_parsed = parse_value(bottom_value)
+                    percentage = round(((given_value - bottom_value_parsed) / (top_value_parsed - bottom_value_parsed)) * 100, 1)
+                    percentage = max(min(percentage, 100), 0)  # Cap the percentage between 0 and 100
+                    print(f"Current DPS: {extracted_text} - Percentage: {round(percentage * scale, 1)} \n")
+                else:
+                    percentage = max(min(round(percentage, 0) - 5, 100), 0)
+                    if percentage <= 4.9:
+                        percentage = 0
+                    print(f"Invalid or no combat data found. Percentage: {round(percentage * scale, 1)} \n")
+
 
             for device_id, device in client.devices.items():
                 if device.actuators and len(device.actuators) > 0:
                     await device.actuators[0].command(float(scale * percentage / 100.0))
                 if device.rotatory_actuators and len(device.rotatory_actuators) > 0:
                     await device.rotatory_actuators[0].command(rotationscale * percentage / 100.0, True)
+
         except Exception as e:
             logging.error(f"Error during processing: {e}")
 
-        await asyncio.sleep(0.4)
+        await asyncio.sleep(0.5)
 
 logging.getLogger('asyncio').setLevel(logging.ERROR)
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)

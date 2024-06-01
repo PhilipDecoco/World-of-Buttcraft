@@ -1,2 +1,2 @@
 @echo off
-python wobp.py
+python wob.py
