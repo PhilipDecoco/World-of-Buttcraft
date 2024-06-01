@@ -74,7 +74,7 @@ async def main():
             extracted_text = pytesseract.image_to_string(screenshot_image).strip()
 
             if extracted_text == "DEAD" and vibe_on_death == True:
-                print("DEAD")
+                print("DEAD \n")
                 for _ in range(5):
                     for device_id, device in client.devices.items():
                         if device.actuators and len(device.actuators) > 0:
