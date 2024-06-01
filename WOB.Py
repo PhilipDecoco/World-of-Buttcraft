@@ -22,7 +22,8 @@ region = tuple(map(int, region_str.split(',')))
 top_value = strip_comments(config['Settings']['top_value'])
 bottom_value = strip_comments(config['Settings']['bottom_value'])
 scale = float(strip_comments(config['Settings']['scale']))
-rotationscale =float(strip_comments(config['Settings']['rotationscale'])) 
+rotationscale = float(strip_comments(config['Settings']['rotationscale'])) 
+vibe_on_death = bool(strip_comments(config['Settings']['vibe_on_death']))
 
 tesseract_cmd = "Tesseract-OCR\\tesseract.exe"
 pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
@@ -55,10 +56,11 @@ async def main():
     #connect buttplugio devices
     await client.start_scanning()
     print("Scanning Devices...")
-    await asyncio.sleep(10)
+    await asyncio.sleep(5)
     await client.stop_scanning()
     client.logger.info(f"Devices: {client.devices}")
     print("Current scale:", scale)
+    print("Vibe on death:", vibe_on_death)
 
     percentage = 0
 
@@ -71,7 +73,7 @@ async def main():
             screenshot_image = Image.open(screenshot_bytes)
             extracted_text = pytesseract.image_to_string(screenshot_image).strip()
 
-            if extracted_text == "DEAD":
+            if extracted_text == "DEAD" and vibe_on_death == True:
                 print("DEAD")
                 for _ in range(5):
                     for device_id, device in client.devices.items():
