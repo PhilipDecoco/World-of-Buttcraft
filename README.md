@@ -27,6 +27,7 @@ pip install -r requirements.txt
 
 * Open config.ini file
 * Configure based on intructions in the file
+* Toggle healing mode in the WA Custom Settings
 
 
 ### Executing program
@@ -38,4 +39,5 @@ pip install -r requirements.txt
 
 ## Features
 - Vibrate based on current DPS done
+- Vibrate on death
 - Other features to be added
