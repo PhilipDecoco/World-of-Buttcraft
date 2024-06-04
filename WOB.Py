@@ -24,6 +24,7 @@ bottom_value = strip_comments(config['Settings']['bottom_value'])
 scale = float(strip_comments(config['Settings']['scale']))
 rotationscale = float(strip_comments(config['Settings']['rotationscale'])) 
 vibe_on_death = bool(strip_comments(config['Settings']['vibe_on_death']))
+vibe_on_win = bool(strip_comments(config['Settings']['vibe_on_win']))
 
 tesseract_cmd = "Tesseract-OCR\\tesseract.exe"
 pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
@@ -59,23 +60,43 @@ async def main():
     await asyncio.sleep(5)
     await client.stop_scanning()
     client.logger.info(f"Devices: {client.devices}")
-    print("Current scale:", scale)
-    print("Vibe on death:", vibe_on_death)
+    print("\n Current scale:", scale)
+    print(f"\n Vibe on death: {vibe_on_death} \n ")
 
     percentage = 0
 
     while True:
-        try:
-            screenshot = pyautogui.screenshot(region=region)
-            screenshot_bytes = io.BytesIO()
-            screenshot.save(screenshot_bytes, format='PNG')
-            screenshot_bytes.seek(0)
-            screenshot_image = Image.open(screenshot_bytes)
-            extracted_text = pytesseract.image_to_string(screenshot_image).strip()
+        screenshot = pyautogui.screenshot(region=region)
+        screenshot_bytes = io.BytesIO()
+        screenshot.save(screenshot_bytes, format='PNG')
+        screenshot_bytes.seek(0)
+        screenshot_image = Image.open(screenshot_bytes)
+        extracted_text = pytesseract.image_to_string(screenshot_image).strip()
 
-            if extracted_text == "DEAD" and vibe_on_death == True:
-                print("DEAD \n")
-                for _ in range(5):
+        if extracted_text == "DEAD" and vibe_on_death == True:
+            print("DEAD \n")
+            for _ in range(10):
+                print("Pulsing \n")
+                for device_id, device in client.devices.items():
+                    if device.actuators and len(device.actuators) > 0:
+                        await device.actuators[0].command(scale * 1)
+                    if device.rotatory_actuators and len(device.rotatory_actuators) > 0:
+                        await device.rotatory_actuators[0].command(rotationscale * 1)
+                await asyncio.sleep(0.8)
+
+                for device_id, device in client.devices.items():
+                    if device.actuators and len(device.actuators) > 0:
+                        await device.actuators[0].command(0)
+                    if device.rotatory_actuators and len(device.rotatory_actuators) > 0:
+                        await device.rotatory_actuators[0].command(0)
+                await asyncio.sleep(0.2)
+            percentage = 0
+
+        else:
+            if extracted_text == "WIN" and vibe_on_win == True:
+                print("WIN \n")
+                for _ in range(10):
+                    print("MAX \n")
                     for device_id, device in client.devices.items():
                         if device.actuators and len(device.actuators) > 0:
                             await device.actuators[0].command(scale * 1)
@@ -85,36 +106,33 @@ async def main():
 
                     for device_id, device in client.devices.items():
                         if device.actuators and len(device.actuators) > 0:
-                            await device.actuators[0].command(0)
+                            await device.actuators[0].command(scale * 0.8)
                         if device.rotatory_actuators and len(device.rotatory_actuators) > 0:
-                            await device.rotatory_actuators[0].command(0)
+                            await device.rotatory_actuators[0].command(rotationscale * 0.8)
                     await asyncio.sleep(0.2)
-                percentage = 0
+            percentage = 1
 
+            if extracted_text and is_valid_text(extracted_text):
+                given_value_str = extracted_text
+                given_value = parse_value(given_value_str)
+                top_value_parsed = parse_value(top_value)
+                bottom_value_parsed = parse_value(bottom_value)
+                percentage = round(((given_value - bottom_value_parsed) / (top_value_parsed - bottom_value_parsed)) * 100)
+                percentage = max(min(percentage, 100), 0)  # Cap the percentage between 0 and 100
+                print(f"Current DPS: {extracted_text} - Percentage: {round(percentage * scale)} \n")
             else:
-                if extracted_text and is_valid_text(extracted_text):
-                    given_value_str = extracted_text
-                    given_value = parse_value(given_value_str)
-                    top_value_parsed = parse_value(top_value)
-                    bottom_value_parsed = parse_value(bottom_value)
-                    percentage = round(((given_value - bottom_value_parsed) / (top_value_parsed - bottom_value_parsed)) * 100, 1)
-                    percentage = max(min(percentage, 100), 0)  # Cap the percentage between 0 and 100
-                    print(f"Current DPS: {extracted_text} - Percentage: {round(percentage * scale, 1)} \n")
-                else:
-                    percentage = max(min(round(percentage, 0) - 5, 100), 0)
-                    if percentage <= 4.9:
-                        percentage = 0
-                    print(f"Invalid or no combat data found. Percentage: {round(percentage * scale, 1)} \n")
+                percentage = max(min(round(percentage, 0) - 5, 100), 0)
+                if percentage <= 4.9:
+                    percentage = 0
+                print(f"Invalid or no combat data found. Percentage: {round(percentage * scale)} \n")
 
 
-            for device_id, device in client.devices.items():
-                if device.actuators and len(device.actuators) > 0:
-                    await device.actuators[0].command(float(scale * percentage / 100.0))
-                if device.rotatory_actuators and len(device.rotatory_actuators) > 0:
-                    await device.rotatory_actuators[0].command(rotationscale * percentage / 100.0, True)
+        for device_id, device in client.devices.items():
+            if device.actuators and len(device.actuators) > 0:
+                await device.actuators[0].command(float(scale * percentage / 100.0))
+            if device.rotatory_actuators and len(device.rotatory_actuators) > 0:
+                await device.rotatory_actuators[0].command(rotationscale * percentage / 100.0, True)
 
-        except Exception as e:
-            logging.error(f"Error during processing: {e}")
 
         await asyncio.sleep(0.5)
 
