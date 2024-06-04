@@ -62,6 +62,7 @@ async def main():
     client.logger.info(f"Devices: {client.devices}")
     print("\n Current scale:", scale)
     print(f"\n Vibe on death: {vibe_on_death} \n ")
+    print(f" Vibe on win: {vibe_on_win} \n ")
 
     percentage = 0
 
