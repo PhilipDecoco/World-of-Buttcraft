@@ -40,4 +40,5 @@ pip install -r requirements.txt
 ## Features
 - Vibrate based on current DPS done
 - Vibrate on death
+- Vibrate on boss kills
 - Other features to be added
