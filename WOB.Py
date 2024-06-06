@@ -111,7 +111,7 @@ async def main():
                         if device.rotatory_actuators and len(device.rotatory_actuators) > 0:
                             await device.rotatory_actuators[0].command(rotationscale * 0.8)
                     await asyncio.sleep(0.2)
-            percentage = 1
+            
 
             if extracted_text and is_valid_text(extracted_text):
                 given_value_str = extracted_text
