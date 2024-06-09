@@ -23,13 +23,6 @@ pip install -r requirements.txt
 ```
 * Move the WeakAura to desired location (anywhere on screen where it's visible at all times)
 
-### Config
-
-* Open config.ini file
-* Configure based on intructions in the file
-* Toggle healing mode in the WA Custom Settings
-
-
 ### Executing program
 
 * Open Intiface Central and start the server
@@ -38,6 +31,7 @@ pip install -r requirements.txt
 * Enjoy
 
 ## Features
+- Simple GUI
 - Vibrate based on current DPS done
 - Vibrate on death
 - Vibrate on boss kills
