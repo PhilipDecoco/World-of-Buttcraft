@@ -2,6 +2,8 @@
 
 buttplug.io integration for World of Warcraft, vibrates based on DPS/HPS Done, vibrates on death and boss kills, uses screenshots since it's hard to access WoW externally
 
+![Untitled-1](https://github.com/PhilipDecoco/World-of-Buttcraft/assets/170837564/77185f9c-cc8f-4d57-8cbb-10aca009fbf6)
+
 ### Dependencies
 
 * [Python](https://www.python.org/downloads/release/python-3123/)
