@@ -1,2 +1,2 @@
 @echo off
-python wob.py
+pythonw.exe wob.py
